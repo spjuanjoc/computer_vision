@@ -1,9 +1,7 @@
 # Hello OpenCV
 
-Hello world with OpenCV. Load and show "Lena"
+Hello world with OpenCV.
 
-For OpenCV version greater than 4.8 it is not working with wayland in Ubuntu
-Jammy.
 
 ## Troubleshooting
 
