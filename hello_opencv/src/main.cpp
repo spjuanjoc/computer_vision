@@ -48,7 +48,7 @@ main()
         break;
 
       drawText(frame);
-      imshow("Hello OpenCV", frame);
+      cv::imshow("Hello OpenCV", frame);
 
       if (cv::waitKey(10) >= 0)
         break;
@@ -59,7 +59,7 @@ main()
     fmt::println("No capture");
     frame = cv::Mat::zeros(480, 640, CV_8UC1);
     drawText(frame);
-    imshow("Hello OpenCV", frame);
+    cv::imshow("Hello OpenCV", frame);
     cv::waitKey(0);
   }
 
