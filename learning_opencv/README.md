@@ -8,16 +8,16 @@ Jammy.
 ## Lessons
 
 
-P1 Mostrar imagen
-P2 Video Barra
-P3 Realces, grayworld, espacios de colores + inf
-P4 Morfologia
-P5 Morf Color
-P6 Histograma
-P7 Comparacion de histogramas
-P8 Matching Template
-P9 VideoRec
-P10 Machine Learning
+- P1 Mostrar imagen
+- P2 Video Barra
+- P3 Realces, grayworld, espacios de colores + inf
+- P4 Morfologia
+- P5 Morf Color
+- P6 Histograma
+- P7 Comparacion de histogramas
+- P8 Matching Template
+- P9 VideoRec
+- P10 Machine Learning
 
 
 ## Troubleshooting
