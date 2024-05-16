@@ -15,7 +15,7 @@
 #include "ImageProcessing/Drawing.h"
 #include "Screen/Components/Background.h"
 #include "Screen/Components/StartWindow.h"
-#include "Screen/Menu.h"
+#include "Screen/MenuBuilder.h"
 
 #include "bindings/imgui-SFML.h"
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -35,24 +35,45 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   Core::EventsHandler program { main_window };
   Background          background;
   StartWindow         start_window;
-  ImGuiWindowFlags    window_flags = ImGuiWindowFlags_AlwaysAutoResize;
+  sf::Texture         texture_src;
+  sf::Texture         texture_dst;
+  std::string         filename        = "share/images/spheres.bmp";
+  cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
+  sf::Image           image_src       = cvMat2sfImage(mat_src);
+  bool                should_draw_src = true;
+  int                 kernel_size     = 1;
+  Screen::Menu::MenuBuilder  menu;
+  std::array<std::string, 4> options_main       = { "Raw images", "Load image", "Video", "Preprocessing" };
+  std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color space" };
+  std::array<std::string, 5> options_enhance = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
 
-  background.setWindow(main_window);
-  start_window.setWindow(main_window);
+  auto on_button1 = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+  auto on_button2 = [&]() { menu.drawSubmenu("Enhancements menu"); };
+  auto hello_cb   = []() { ImGui::Text("hello"); };
+  auto on_median  = [&]()
+  {
+    should_draw_median = true;
+    if (should_draw_median)
+      drawMedian(mat_src, kernel_size, texture_dst, should_draw_median);
+  };
 
-  std::string          filename  = "share/images/lena.bmp";
-  cv::Mat              cv_image  = cv::imread(filename, cv::IMREAD_UNCHANGED);
-  sf::Image            image_src = cvMat2sfImage(cv_image);
-  sf::Texture          texture_src;
-  sf::Texture          texture_dst;
-  int                  kernel_size = 1;
-  constexpr const auto step        = 2;
+  menu.addMenuOptions({ "Main menu", options_main });
+  menu.addMenuOptions({ "Preprocessing menu", options_preprocess });
+  menu.addMenuOptions({ "Enhancements menu", options_enhance });
 
-  cv::Mat   mat       = sfImage2cvMat(image_src);
-  sf::Image image_dst = cvMat2sfImage(applyMedianFilter(mat, kernel_size));
+  menu.addPopupOption({ "Preprocessing", on_button1 })
+    .addPopupOption({ "Show image", hello_cb })
+    .addPopupOption({ "Grayworld", hello_cb })
+    .addPopupOption({ "Enhancements", on_button2 })
+    .addPopupOption({ "Median blur", on_median });
+
+  //  cv::Mat   mat       = sfImage2cvMat(image_src);
+//  sf::Image image_dst = cvMat2sfImage(applyMedianFilter(mat, kernel_size));
 
   texture_src.loadFromImage(image_src);
-  texture_dst.loadFromImage(image_dst);
+  texture_dst.loadFromImage(image_src);
+  background.setWindow(main_window);
+  start_window.setWindow(main_window);
 
   while (main_window->isOpen())
   {
@@ -62,13 +83,17 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     main_window->clear();
     background.draw();
 
-    showAppMainMenuBar();
-    drawMainMenu(window_flags);
+    menu.draw("Main menu");
 
-    drawSrcImage(window_flags, texture_src);
-
-    if (draw_median)
-      drawMedian(window_flags, texture_dst, kernel_size, step, mat, image_dst);
+//    menu.showOptionPopup("Option Preprocessing", "", hello_cb);
+//    showAppMainMenuBar();
+//    drawMainMenu();
+//
+    if (should_draw_src)
+      drawSrcImage(texture_src, should_draw_src);
+//
+//    if (should_draw_median)
+//      drawMedian(mat_src, kernel_size, texture_dst, should_draw_median);
 
     ImGui::SFML::Render(*main_window);
     main_window->display();

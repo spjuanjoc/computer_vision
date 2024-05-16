@@ -1,7 +1,7 @@
 /**
  * @brief
  *
- * @author  juanjose
+ * @author  spjuanjoc
  * @date    2024-05-15
  */
 
@@ -10,17 +10,51 @@
 
 #include <Core/Logging/Logger.h>
 
+#include <array>
 #include <imgui.h>
+#include <span>
 
 namespace Screen::Menu
 {
 
-bool draw_median = false;
+enum class ENHANCEMENTS
+{
+  CONVOLUTION = 0,
+  LAPLACE     = 1,
+  MEDIAN      = 2,
+  SOBEL       = 3,
+  THRESHOLD   = 4
+};
+
+class MenuBuilder
+{
+public:
+  using CallbackPair = std::pair<std::string_view, std::function<void()>>;
+  using SubmenuPair  = std::pair<std::string, std::span<std::string>>;
+
+  void draw(std::string_view name);
+
+  void drawSubmenu(std::string_view name);
+
+  MenuBuilder& addPopupOption(const CallbackPair& option);
+
+  void addMenuOptions(const MenuBuilder::SubmenuPair& menu);
+
+  void setButtonsSize(const ImVec2& size);
+
+private:
+  ImVec2 m_buttons_size{ 150, 25 };
+  std::span<std::string_view> m_options;
+  std::vector<CallbackPair> m_popup_options;
+  std::unordered_map<std::string, std::span<std::string>>  m_submenus;
+};
+
+static bool should_draw_median = true;
 
 static void
 ShowExampleMenuFile()
 {
-  ImGui::MenuItem("App Menu", nullptr, false, false);
+  ImGui::MenuItem("App MenuBuilder", nullptr, false, false);
   if (ImGui::MenuItem("New")) {}
   if (ImGui::MenuItem("Open", "Ctrl+O")) {}
   if (ImGui::BeginMenu("Open Recent"))
@@ -116,7 +150,7 @@ showAppMainMenuBar()
   }
 }
 
-void
+static void
 showMenuEnhancements()
 {
   const std::array<std::string, 5> options_enhance
@@ -134,13 +168,13 @@ showMenuEnhancements()
 
     if (ImGui::BeginPopup("Option Median blur"))
     {
-      draw_median = true;
+      should_draw_median = true;
       ImGui::EndPopup();
     }
   }
 }
 
-void
+static void
 showMenuPreprocessing()
 {
   const std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color space" };
@@ -158,14 +192,14 @@ showMenuPreprocessing()
 
   if (ImGui::BeginPopup("Option Enhancements"))
   {
-    ImGui::Text("Enhancements Menu");
+    ImGui::Text("Enhancements MenuBuilder");
     showMenuEnhancements();
     ImGui::EndPopup();
   }
 }
 
-void
-drawMainMenu(ImGuiWindowFlags window_flags)
+static void
+drawMainMenu()
 {
   const std::array<std::string, 4> options = { "Raw images", "Show image", "Video", "Preprocessing" };
 
@@ -185,7 +219,7 @@ drawMainMenu(ImGuiWindowFlags window_flags)
 
     if (ImGui::BeginPopup("Option Preprocessing"))
     {
-      ImGui::Text("Preprocessing Menu");
+      ImGui::Text("Preprocessing MenuBuilder");
       showMenuPreprocessing();
       ImGui::EndPopup();
     }
@@ -194,6 +228,6 @@ drawMainMenu(ImGuiWindowFlags window_flags)
   }
 }
 
-}  // namespace Screen::Menu
+}  // namespace Screen::MenuBuilder
 
 #endif  //OPENCV_IMGUI_SFML_INCLUDE_SCREEN_MENU_H

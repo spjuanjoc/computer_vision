@@ -1,7 +1,7 @@
 /**
  * @brief
  *
- * @author  juanjose
+ * @author  spjuanjoc
  * @date    2024-05-15
  */
 
@@ -20,33 +20,34 @@ namespace Processing
 {
 
 void
-drawSrcImage(ImGuiWindowFlags window_flags, const sf::Texture& texture_src)
+drawSrcImage(const sf::Texture& texture_src, bool& is_open)
 {
-  ImGui::Begin("Original", nullptr, window_flags);
+  if (is_open)
   {
-    ImGui::Image(texture_src);
+    ImGui::Begin("Original", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+      ImGui::Image(texture_src);
+    }
+    ImGui::End();
   }
-  ImGui::End();
 }
 
 void
-drawMedian(
-  ImGuiWindowFlags window_flags,
-  sf::Texture&     texture_dst,
-  int&             kernel_size,
-  const int        step,
-  const cv::Mat&   mat,
-  sf::Image&       image_dst)
+drawMedian(const cv::Mat& mat, int& kernel_size, sf::Texture& texture_dst, bool& is_open)
 {
-  ImGui::Begin("Filtered", nullptr, window_flags);
+  constexpr const auto step_size = 2;
+
+  if (is_open)
   {
-    image_dst = cvMat2sfImage(applyMedianFilter(mat, kernel_size));
-    texture_dst.update(image_dst);
-    ImGui::Image(texture_dst);
-    ImGui::InputInt("Kernel size", &kernel_size, step);
-    kernel_size = (kernel_size < 1) ? 1 : kernel_size;
+    ImGui::Begin("Filtered", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+      texture_dst.update(cvMat2sfImage(applyMedianFilter(mat, kernel_size)));
+      ImGui::Image(texture_dst);
+      ImGui::InputInt("Kernel size", &kernel_size, step_size);
+      kernel_size = (kernel_size < 1) ? 1 : kernel_size;
+    }
+    ImGui::End();
   }
-  ImGui::End();
 }
 
 }  // namespace Processing
