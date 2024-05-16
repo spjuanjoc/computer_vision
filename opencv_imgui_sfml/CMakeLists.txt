@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(opencv_imgui_sfml
   VERSION "1.0.0"
-  DESCRIPTION "Hello OpenCV with ImGui and SFML"
+  DESCRIPTION "Learning OpenCV with ImGui and SFML"
   LANGUAGES CXX
 )
 
