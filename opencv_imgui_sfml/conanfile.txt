@@ -1,0 +1,15 @@
+[requires]
+  argparse/3.0
+  imgui/1.90.5
+  libsigcpp/3.0.7
+  opencv/4.5.5
+  sfml/2.6.1
+  spdlog/1.12.0
+
+  flac/1.4.3
+
+[build_requires]
+  opengl/system
+
+[generators]
+  cmake_find_package
