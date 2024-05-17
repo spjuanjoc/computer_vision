@@ -20,35 +20,10 @@ namespace Processing
 {
 
 void
-drawSrcImage(const sf::Texture& texture_src, bool& is_open)
-{
-  if (is_open)
-  {
-    ImGui::Begin("Original", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
-    {
-      ImGui::Image(texture_src);
-    }
-    ImGui::End();
-  }
-}
+createCvMat(bool is_open);
 
 void
-drawMedian(const cv::Mat& mat, int& kernel_size, sf::Texture& texture_dst, bool& is_open)
-{
-  constexpr const auto step_size = 2;
-
-  if (is_open)
-  {
-    ImGui::Begin("Filtered", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
-    {
-      texture_dst.update(cvMat2sfImage(applyMedianFilter(mat, kernel_size)));
-      ImGui::Image(texture_dst);
-      ImGui::InputInt("Kernel size", &kernel_size, step_size);
-      kernel_size = (kernel_size < 1) ? 1 : kernel_size;
-    }
-    ImGui::End();
-  }
-}
+drawSrcImage(const sf::Texture& texture_src, bool& is_open);
 
 }  // namespace Processing
 

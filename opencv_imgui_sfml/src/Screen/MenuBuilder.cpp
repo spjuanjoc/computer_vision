@@ -53,11 +53,14 @@ MenuBuilder::addPopupOption(const CallbackPair& option)
 
   return *this;
 }
-void
+
+MenuBuilder&
 MenuBuilder::addMenuOptions(const MenuBuilder::SubmenuPair& menu)
 {
   auto& [name, options] = menu;
   m_submenus[name] = options;
+
+  return *this;
 }
 
 void

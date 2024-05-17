@@ -9,6 +9,7 @@
 #define IMAGEPROCESSING_CONVERSIONS_H
 
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utils/logger.hpp>
 #include <opencv2/highgui.hpp>
@@ -18,43 +19,25 @@ namespace Processing
 {
 
 sf::Image
-cvMat2sfImage(const cv::Mat& cv_mat)
-{
-  sf::Image sf_image;
-  cv::Mat   cv_image_alpha;
-
-  cv::cvtColor(cv_mat, cv_image_alpha, cv::COLOR_BGR2RGBA);
-  auto width  = static_cast<uint32_t>(cv_image_alpha.cols);
-  auto height = static_cast<uint32_t>(cv_image_alpha.rows);
-  sf_image.create(width, height, cv_image_alpha.ptr());
-
-  return sf_image;
-}
+cvMat2sfImage(const cv::Mat& cv_mat);
 
 cv::Mat
-sfImage2cvMat(const sf::Image& sf_image)
-{
-  sf::Image  image { sf_image };
-  const auto width  = static_cast<int32_t>(image.getSize().x);
-  const auto height = static_cast<int32_t>(image.getSize().y);
-  cv::Size   size(width, height);
-  void*      image_pixels = const_cast<void*>(reinterpret_cast<const void*>(image.getPixelsPtr()));
-  cv::Mat    cv_mat(size, CV_8UC4, image_pixels, cv::Mat::AUTO_STEP);
-
-  cv::cvtColor(cv_mat, cv_mat, cv::COLOR_RGBA2BGRA);
-
-  return cv_mat.clone();
-}
+sfImage2cvMat(const sf::Image& sf_image);
 
 cv::Mat
-applyMedianFilter(const cv::Mat& image, const int& kernel_size)
-{
-  cv::Mat filter_image;
+applyLaplaceFilter(const cv::Mat& image, int depth, const int& kernel_size);
 
-  cv::medianBlur(image, filter_image, kernel_size);
+cv::Mat
+applyMedianFilter(const cv::Mat& image, const int& kernel_size);
 
-  return filter_image;
-}
+cv::Mat
+applySobelFilter(const cv::Mat& mat);
+
+cv::Mat
+applyThresholdFilter(const cv::Mat& image, const int value, const std::size_t type);
+
+std::size_t
+getThresholdType();
 
 }  // namespace Processing
 

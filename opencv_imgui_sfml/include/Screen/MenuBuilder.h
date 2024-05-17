@@ -17,15 +17,6 @@
 namespace Screen::Menu
 {
 
-enum class ENHANCEMENTS
-{
-  CONVOLUTION = 0,
-  LAPLACE     = 1,
-  MEDIAN      = 2,
-  SOBEL       = 3,
-  THRESHOLD   = 4
-};
-
 class MenuBuilder
 {
 public:
@@ -38,7 +29,7 @@ public:
 
   MenuBuilder& addPopupOption(const CallbackPair& option);
 
-  void addMenuOptions(const MenuBuilder::SubmenuPair& menu);
+  MenuBuilder& addMenuOptions(const MenuBuilder::SubmenuPair& menu);
 
   void setButtonsSize(const ImVec2& size);
 
@@ -48,8 +39,7 @@ private:
   std::vector<CallbackPair> m_popup_options;
   std::unordered_map<std::string, std::span<std::string>>  m_submenus;
 };
-
-static bool should_draw_median = true;
+/*
 
 static void
 ShowExampleMenuFile()
@@ -149,84 +139,7 @@ showAppMainMenuBar()
     ImGui::EndMainMenuBar();
   }
 }
-
-static void
-showMenuEnhancements()
-{
-  const std::array<std::string, 5> options_enhance
-    = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
-  ImGui::TextWrapped("Select an option");
-
-  for (int i = 0; i < options_enhance.size(); ++i)
-  {
-    const auto popup_name = fmt::format("Option {}", options_enhance.at(i));
-
-    if (ImGui::Button(options_enhance[i].c_str()))
-    {
-      ImGui::OpenPopup(popup_name.c_str());
-    }
-
-    if (ImGui::BeginPopup("Option Median blur"))
-    {
-      should_draw_median = true;
-      ImGui::EndPopup();
-    }
-  }
-}
-
-static void
-showMenuPreprocessing()
-{
-  const std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color space" };
-  ImGui::TextWrapped("Select an option");
-
-  for (int i = 0; i < options_preprocess.size(); ++i)
-  {
-    const auto popup_name = fmt::format("Option {}", options_preprocess.at(i));
-
-    if (ImGui::Button(options_preprocess[i].c_str()))
-    {
-      ImGui::OpenPopup(popup_name.c_str());
-    }
-  }
-
-  if (ImGui::BeginPopup("Option Enhancements"))
-  {
-    ImGui::Text("Enhancements MenuBuilder");
-    showMenuEnhancements();
-    ImGui::EndPopup();
-  }
-}
-
-static void
-drawMainMenu()
-{
-  const std::array<std::string, 4> options = { "Raw images", "Show image", "Video", "Preprocessing" };
-
-  if (ImGui::TreeNodeEx("Main menu", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    ImGui::TextWrapped("Select an option");
-
-    for (int i = 0; i < options.size(); ++i)
-    {
-      const auto popup_name = fmt::format("Option {}", options.at(i));
-
-      if (ImGui::Button(options[i].c_str()))
-      {
-        ImGui::OpenPopup(popup_name.c_str());
-      }
-    }
-
-    if (ImGui::BeginPopup("Option Preprocessing"))
-    {
-      ImGui::Text("Preprocessing MenuBuilder");
-      showMenuPreprocessing();
-      ImGui::EndPopup();
-    }
-
-    ImGui::TreePop();
-  }
-}
+*/
 
 }  // namespace Screen::MenuBuilder
 

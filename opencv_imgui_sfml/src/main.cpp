@@ -13,6 +13,8 @@
 #include "Core/Logging/Logger.h"
 #include "ImageProcessing/Conversions.h"
 #include "ImageProcessing/Drawing.h"
+#include "ImageProcessing/Preprocessing.hpp"
+#include "ImageProcessing/Enhancements.hpp"
 #include "Screen/Components/Background.h"
 #include "Screen/Components/StartWindow.h"
 #include "Screen/MenuBuilder.h"
@@ -27,6 +29,8 @@ using namespace Screen;
 using namespace Screen::Components;
 using namespace Screen::Menu;
 using namespace Processing;
+using namespace Processing::Preprocessing;
+using namespace Processing::Enhancements;
 
 void
 runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
@@ -37,38 +41,50 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   StartWindow         start_window;
   sf::Texture         texture_src;
   sf::Texture         texture_dst;
-  std::string         filename        = "share/images/spheres.bmp";
+  std::string         filename        = "share/images/lena.bmp";
   cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
   sf::Image           image_src       = cvMat2sfImage(mat_src);
   bool                should_draw_src = true;
   int                 kernel_size     = 1;
+
   Screen::Menu::MenuBuilder  menu;
-  std::array<std::string, 4> options_main       = { "Raw images", "Load image", "Video", "Preprocessing" };
-  std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color space" };
-  std::array<std::string, 5> options_enhance = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
+  std::array<std::string, 4> options_main       = { "Raw image", "Load image", "Video", "Preprocessing" };
+  std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color spaces" };
+  std::array<std::string, 5> options_enhance    = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
 
-  auto on_button1 = [&]() { menu.drawSubmenu("Preprocessing menu"); };
-  auto on_button2 = [&]() { menu.drawSubmenu("Enhancements menu"); };
-  auto hello_cb   = []() { ImGui::Text("hello"); };
-  auto on_median  = [&]()
-  {
-    should_draw_median = true;
-    if (should_draw_median)
-      drawMedian(mat_src, kernel_size, texture_dst, should_draw_median);
-  };
+  // Callbacks definition
+  auto on_raw         = [&]() { createCvMat(true); };
+  auto on_load        = [&]() { should_draw_src = true; };
+  auto on_preprocess  = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+  auto on_grayworld   = [&]() { grayWorld(mat_src, true); };
+  auto on_enhancement = [&]() { menu.drawSubmenu("Enhancements menu"); };
 
-  menu.addMenuOptions({ "Main menu", options_main });
-  menu.addMenuOptions({ "Preprocessing menu", options_preprocess });
-  menu.addMenuOptions({ "Enhancements menu", options_enhance });
+  auto on_convolution = [&]() { convolution(mat_src, true); };
+  auto on_laplace     = [&]() { laplace(mat_src, true); };
+  auto on_median      = [&]() { medianBlur(mat_src, kernel_size, true); };
+  auto on_sobel      = [&]() { sobel(mat_src, true); };
+  auto on_threshold      = [&]() { thresholding(mat_src, true); };
 
-  menu.addPopupOption({ "Preprocessing", on_button1 })
-    .addPopupOption({ "Show image", hello_cb })
-    .addPopupOption({ "Grayworld", hello_cb })
-    .addPopupOption({ "Enhancements", on_button2 })
-    .addPopupOption({ "Median blur", on_median });
+  auto do_nothing = [&]() { ImGui::Text("nothing"); };
 
-  //  cv::Mat   mat       = sfImage2cvMat(image_src);
-//  sf::Image image_dst = cvMat2sfImage(applyMedianFilter(mat, kernel_size));
+  menu.addMenuOptions({ "Main menu", options_main })
+    .addPopupOption({ "Raw image", on_raw })
+    .addPopupOption({ "Load image", on_load })
+    .addPopupOption({ "Video", do_nothing })
+    .addPopupOption({ "Preprocessing", on_preprocess });
+
+  menu.addMenuOptions({ "Preprocessing menu", options_preprocess })
+    .addPopupOption({ "Grayworld", on_grayworld })
+    .addPopupOption({ "Enhancements", on_enhancement })
+    .addPopupOption({ "Color spaces", do_nothing });
+
+  menu.addMenuOptions({ "Enhancements menu", options_enhance })
+    .addPopupOption({ "Convolution", on_convolution })
+    .addPopupOption({ "Laplace filter", on_laplace })
+    .addPopupOption({ "Median blur", on_median })
+    .addPopupOption({ "Sobel filter", on_sobel })
+    .addPopupOption({ "Thresholding", on_threshold });
+
 
   texture_src.loadFromImage(image_src);
   texture_dst.loadFromImage(image_src);
@@ -85,15 +101,11 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
 
     menu.draw("Main menu");
 
-//    menu.showOptionPopup("Option Preprocessing", "", hello_cb);
 //    showAppMainMenuBar();
 //    drawMainMenu();
-//
+
     if (should_draw_src)
       drawSrcImage(texture_src, should_draw_src);
-//
-//    if (should_draw_median)
-//      drawMedian(mat_src, kernel_size, texture_dst, should_draw_median);
 
     ImGui::SFML::Render(*main_window);
     main_window->display();
