@@ -11,10 +11,11 @@
 #include "Core/Initialization/Arguments.h"
 #include "Core/Initialization/Fonts.h"
 #include "Core/Logging/Logger.h"
+#include "ImageProcessing/ColorSpaces.hpp"
 #include "ImageProcessing/Conversions.h"
 #include "ImageProcessing/Drawing.h"
-#include "ImageProcessing/Preprocessing.hpp"
 #include "ImageProcessing/Enhancements.hpp"
+#include "ImageProcessing/Preprocessing.hpp"
 #include "Screen/Components/Background.h"
 #include "Screen/Components/StartWindow.h"
 #include "Screen/MenuBuilder.h"
@@ -31,6 +32,7 @@ using namespace Screen::Menu;
 using namespace Processing;
 using namespace Processing::Preprocessing;
 using namespace Processing::Enhancements;
+using namespace Processing::Spaces;
 
 void
 runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
@@ -41,7 +43,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   StartWindow         start_window;
   sf::Texture         texture_src;
   sf::Texture         texture_dst;
-  std::string         filename        = "share/images/lena.bmp";
+  std::string         filename        = "share/images/starry_night.jpg";
   cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
   sf::Image           image_src       = cvMat2sfImage(mat_src);
   bool                should_draw_src = true;
@@ -51,21 +53,35 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   std::array<std::string, 4> options_main       = { "Raw image", "Load image", "Video", "Preprocessing" };
   std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color spaces" };
   std::array<std::string, 5> options_enhance    = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
+  std::array<std::string, 5> options_spaces     = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
 
-  // Callbacks definition
-  auto on_raw         = [&]() { createCvMat(true); };
-  auto on_load        = [&]() { should_draw_src = true; };
-  auto on_preprocess  = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+  // Callbacks definitions
+  // Main
+  auto on_raw        = [&]() { createCvMat(true); };
+  auto on_load       = [&]() { should_draw_src = true; };
+  auto on_preprocess = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+
+  // Preprocessing
   auto on_grayworld   = [&]() { grayWorld(mat_src, true); };
   auto on_enhancement = [&]() { menu.drawSubmenu("Enhancements menu"); };
 
+  // Enhancements
   auto on_convolution = [&]() { convolution(mat_src, true); };
   auto on_laplace     = [&]() { laplace(mat_src, true); };
   auto on_median      = [&]() { medianBlur(mat_src, kernel_size, true); };
-  auto on_sobel      = [&]() { sobel(mat_src, true); };
-  auto on_threshold      = [&]() { thresholding(mat_src, true); };
+  auto on_sobel       = [&]() { sobel(mat_src, true); };
+  auto on_threshold   = [&]() { thresholding(mat_src, true); };
 
-  auto do_nothing = [&]() { ImGui::Text("nothing"); };
+  // Color spaces
+  auto on_spaces = [&]() { menu.drawSubmenu("Color spaces menu"); };
+  auto on_gray   = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2GRAY); };
+  auto on_hls    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2HLS); };
+  auto on_hsv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2HSV); };
+  auto on_cielab    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Lab); };
+//  auto on_cieluv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Luv); };
+  auto on_ycrcb    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2YCrCb); };
+
+  auto do_nothing = [&]() { ImGui::Text("nothing here, come back later"); };
 
   menu.addMenuOptions({ "Main menu", options_main })
     .addPopupOption({ "Raw image", on_raw })
@@ -76,7 +92,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   menu.addMenuOptions({ "Preprocessing menu", options_preprocess })
     .addPopupOption({ "Grayworld", on_grayworld })
     .addPopupOption({ "Enhancements", on_enhancement })
-    .addPopupOption({ "Color spaces", do_nothing });
+    .addPopupOption({ "Color spaces", on_spaces });
 
   menu.addMenuOptions({ "Enhancements menu", options_enhance })
     .addPopupOption({ "Convolution", on_convolution })
@@ -84,6 +100,14 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     .addPopupOption({ "Median blur", on_median })
     .addPopupOption({ "Sobel filter", on_sobel })
     .addPopupOption({ "Thresholding", on_threshold });
+
+  menu.addMenuOptions({ "Color spaces menu", options_spaces })
+    .addPopupOption({ "Gray space", on_gray })
+    .addPopupOption({ "HLS", on_hls })
+    .addPopupOption({ "HSV", on_hsv })
+    .addPopupOption({ "CIE lab", on_cielab })
+//    .addPopupOption({ "CIE lub", on_cieluv })
+    .addPopupOption({ "YUV (YCrCb)", on_ycrcb });
 
 
   texture_src.loadFromImage(image_src);
@@ -101,8 +125,8 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
 
     menu.draw("Main menu");
 
-//    showAppMainMenuBar();
-//    drawMainMenu();
+    //    showAppMainMenuBar();
+    //    drawMainMenu();
 
     if (should_draw_src)
       drawSrcImage(texture_src, should_draw_src);

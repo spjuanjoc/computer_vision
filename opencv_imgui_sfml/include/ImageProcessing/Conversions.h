@@ -39,6 +39,9 @@ applyThresholdFilter(const cv::Mat& image, const int value, const std::size_t ty
 std::size_t
 getThresholdType();
 
+std::string
+toColorSpaceName(const cv::ColorConversionCodes code);
+
 }  // namespace Processing
 
 #endif  //IMAGEPROCESSING_CONVERSIONS_H

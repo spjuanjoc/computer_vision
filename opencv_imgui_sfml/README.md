@@ -13,10 +13,20 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
 - [X] Basic show image
 - [ ] Load a video and add a trackbar
 - [ ] Preprocessing:
-  - [ ] Grayworld algorithm
-  - [ ] Enhancements
+  - [x] Grayworld algorithm
+  - [x] Enhancements
+    - [x] Convolution
+    - [x] Laplace
     - [x] Median blur
+    - [x] Sobel
+    - [x] Threshold
   - [ ] Color spaces
+    - [ ] Gray
+    - [ ] HLS (hue lightness saturation)
+    - [ ] HSV (hue saturation value)
+    - [ ] Cie Lab
+    - [ ] Cie Luv
+    - [ ]
 - [ ] Morphology
 - [ ] Morf Color
 - [ ] Histograms
@@ -25,7 +35,10 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
 - [ ] Video Recording
 - [ ] Machine Learning
 
+## To Do
 
+Load file
+Save file
 
 ## Troubleshooting
 

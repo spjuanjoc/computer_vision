@@ -8,9 +8,19 @@
 #include "ImageProcessing/Conversions.h"
 
 #include <imgui.h>
+#include <map>
 
 namespace Processing
 {
+
+static const std::map<cv::ColorConversionCodes, std::string_view> COLOR_SPACES {
+  { cv::COLOR_RGB2GRAY, "Gray Space" },
+  { cv::COLOR_RGB2HLS, "HLS Space" },
+  { cv::COLOR_RGB2HSV, "HSV Space" },
+  { cv::COLOR_RGB2Lab, "CIE Lab Space" },
+  { cv::COLOR_RGB2Luv, "CIE Luv Space" },
+  { cv::COLOR_RGB2YCrCb, "Y Cr Cb Space" },
+};
 
 sf::Image
 cvMat2sfImage(const cv::Mat& cv_mat)
@@ -118,6 +128,19 @@ getThresholdType()
   }
 
   return current_index;
+}
+
+std::string
+toColorSpaceName(const cv::ColorConversionCodes code)
+{
+  std::string name = "Not found";
+
+  if (const auto& space = COLOR_SPACES.find(code); space != COLOR_SPACES.end())
+  {
+    name = space->second;
+  }
+
+  return name;
 }
 
 }  // namespace Processing
