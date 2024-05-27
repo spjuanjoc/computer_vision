@@ -5,13 +5,14 @@
  * @date    2024-05-16
  */
 
-#include "ImageProcessing/Enhancements.hpp"
+#include "ImageProcessing/Preprocessing/Enhancements.hpp"
 
 #include "ImageProcessing/Conversions.h"
 
 #include <imgui.h>
 
 #include "bindings/imgui-SFML.h"
+#include <ImageProcessing/Constants.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <opencv2/core/mat.hpp>
 
@@ -39,7 +40,7 @@ convolution(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Convolution##1", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Convolution##1", &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture_filter);
     }
@@ -48,7 +49,7 @@ convolution(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Convolution##2", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Convolution##2", &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture);
     }
@@ -78,7 +79,7 @@ laplace(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Laplace##1", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Laplace##1", &is_open, WINDOWS_FLAGS);
     {
       filter = applyLaplaceFilter(mat, depth, kernel_size);
       texture_filter.update(cvMat2sfImage(filter));
@@ -89,7 +90,7 @@ laplace(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Laplace##2", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Laplace##2", &is_open, WINDOWS_FLAGS);
     {
       cv::add(mat, filter, result);
       texture.update(cvMat2sfImage(result));
@@ -110,7 +111,7 @@ medianBlur(const cv::Mat& mat, int& kernel_size, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Median blur", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Median blur", &is_open, WINDOWS_FLAGS);
     {
       texture.update(cvMat2sfImage(applyMedianFilter(mat, kernel_size)));
       ImGui::Image(texture);
@@ -139,7 +140,7 @@ sobel(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Sobel##1", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Sobel##1", &is_open, WINDOWS_FLAGS);
     {
       filter = applySobelFilter(mat);
       texture_filter.update(cvMat2sfImage(filter));
@@ -150,7 +151,7 @@ sobel(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Sobel##2", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Sobel##2", &is_open, WINDOWS_FLAGS);
     {
       cv::add(mat, filter, result);
       texture.update(cvMat2sfImage(result));
@@ -175,7 +176,7 @@ thresholding(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Threshold", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Threshold", &is_open, WINDOWS_FLAGS);
     {
       texture.update(cvMat2sfImage(applyThresholdFilter(mat, value, type)));
       ImGui::Image(texture);

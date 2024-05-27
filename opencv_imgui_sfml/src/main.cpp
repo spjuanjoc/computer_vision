@@ -11,14 +11,17 @@
 #include "Core/Initialization/Arguments.h"
 #include "Core/Initialization/Fonts.h"
 #include "Core/Logging/Logger.h"
-#include "ImageProcessing/ColorSpaces.hpp"
 #include "ImageProcessing/Conversions.h"
 #include "ImageProcessing/Drawing.h"
-#include "ImageProcessing/Enhancements.hpp"
-#include "ImageProcessing/Preprocessing.hpp"
+#include "ImageProcessing/Preprocessing/ColorSpaces.hpp"
+#include "ImageProcessing/Preprocessing/Enhancements.hpp"
+#include "ImageProcessing/Preprocessing/GrayWorld.hpp"
+#include "ImageProcessing/Video/LoadVideo.hpp"
 #include "Screen/Components/Background.h"
 #include "Screen/Components/StartWindow.h"
 #include "Screen/MenuBuilder.h"
+
+#include <future>
 
 #include "bindings/imgui-SFML.h"
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -33,6 +36,7 @@ using namespace Processing;
 using namespace Processing::Preprocessing;
 using namespace Processing::Enhancements;
 using namespace Processing::Spaces;
+using namespace Processing::Video;
 
 void
 runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
@@ -44,6 +48,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   sf::Texture         texture_src;
   sf::Texture         texture_dst;
   std::string         filename        = "share/images/starry_night.jpg";
+  std::string         video           = "share/videos/perfect-sp.avi";
   cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
   sf::Image           image_src       = cvMat2sfImage(mat_src);
   bool                should_draw_src = true;
@@ -51,6 +56,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
 
   Screen::Menu::MenuBuilder  menu;
   std::array<std::string, 4> options_main       = { "Raw image", "Load image", "Video", "Preprocessing" };
+  std::array<std::string, 1> options_video      = { "Load video" };
   std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color spaces" };
   std::array<std::string, 5> options_enhance    = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
   std::array<std::string, 5> options_spaces     = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
@@ -59,7 +65,13 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   // Main
   auto on_raw        = [&]() { createCvMat(true); };
   auto on_load       = [&]() { should_draw_src = true; };
+  auto on_video       = [&]() { menu.drawSubmenu("Video menu"); };
   auto on_preprocess = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+
+  // Video
+  auto on_load_video = [&](){
+    auto video_thread = std::async([&](){loadFromFile(video, true);});
+  };
 
   // Preprocessing
   auto on_grayworld   = [&]() { grayWorld(mat_src, true); };
@@ -86,8 +98,11 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   menu.addMenuOptions({ "Main menu", options_main })
     .addPopupOption({ "Raw image", on_raw })
     .addPopupOption({ "Load image", on_load })
-    .addPopupOption({ "Video", do_nothing })
+    .addPopupOption({ "Video", on_video })
     .addPopupOption({ "Preprocessing", on_preprocess });
+
+  menu.addMenuOptions({"Video menu", options_video})
+    .addPopupOption({"Load video", on_load_video});
 
   menu.addMenuOptions({ "Preprocessing menu", options_preprocess })
     .addPopupOption({ "Grayworld", on_grayworld })
@@ -156,6 +171,7 @@ main(int argc, const char* argv[])
   [[maybe_unused]] bool const isFont = ImGui::SFML::UpdateFontTexture();
   ImGui::GetStyle().ScaleAllSizes(args.scale);
   ImGui::GetIO().FontGlobalScale = args.scale;
+//  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
   runMainLoop(main_window, args);
 

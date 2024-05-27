@@ -5,13 +5,14 @@
  * @date    2024-05-16
  */
 
-#include "ImageProcessing/Preprocessing.hpp"
-
 #include <ImageProcessing/Conversions.h>
+
+#include "ImageProcessing/Preprocessing/GrayWorld.hpp"
 
 #include <imgui.h>
 
 #include "bindings/imgui-SFML.h"
+#include <ImageProcessing/Constants.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -61,7 +62,7 @@ grayWorld(const cv::Mat& mat, bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("Grayworld", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Grayworld", &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture);
     }

@@ -7,6 +7,8 @@
 
 #include "ImageProcessing/Drawing.h"
 
+#include <ImageProcessing/Constants.hpp>
+
 namespace Processing
 {
 
@@ -22,7 +24,7 @@ createCvMat(bool is_open)
 
   if (is_open)
   {
-    ImGui::Begin("cv::Mat", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("cv::Mat", &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture_src);
     }
@@ -35,7 +37,7 @@ drawSrcImage(const sf::Texture& texture_src, bool& is_open)
 {
   if (is_open)
   {
-    ImGui::Begin("Original", &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Original", &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture_src);
     }

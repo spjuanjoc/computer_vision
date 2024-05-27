@@ -5,13 +5,14 @@
  * @date    2024-05-24
  */
 
-#include "ImageProcessing/ColorSpaces.hpp"
+#include "ImageProcessing/Preprocessing/ColorSpaces.hpp"
 
 #include <ImageProcessing/Conversions.h>
 
 #include <imgui.h>
 
 #include "bindings/imgui-SFML.h"
+#include <ImageProcessing/Constants.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -33,7 +34,7 @@ toColorSpace(const cv::Mat& mat, bool is_open, cv::ColorConversionCodes conversi
   if (is_open)
   {
     const auto window_name = toColorSpaceName(conversion_code);
-    ImGui::Begin(window_name.c_str(), &is_open, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(window_name.c_str(), &is_open, WINDOWS_FLAGS);
     {
       ImGui::Image(texture);
     }
