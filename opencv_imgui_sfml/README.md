@@ -3,16 +3,16 @@
 The goal of this project is to revisit and practice some OpenCV functionalities
 in C++, using ImGUI with SFML as back-end.
 In Ubuntu Jammy 20.04 the used version is OpenCV 4.5, since there are some
-inconvenients with Wayland and opencv greater versions.
+inconvenient with Wayland and opencv greater versions.
 
 See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html)
 
 
 ## Lessons
 
-- [X] Basic show image
-- [ ] Load a video and add a trackbar
-- [ ] Preprocessing:
+- [x] Show and image
+- [x] Load a video and add a trackbar
+- [x] Preprocessing:
   - [x] Grayworld algorithm
   - [x] Enhancements
     - [x] Convolution
@@ -20,13 +20,12 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
     - [x] Median blur
     - [x] Sobel
     - [x] Threshold
-  - [ ] Color spaces
-    - [ ] Gray
-    - [ ] HLS (hue lightness saturation)
-    - [ ] HSV (hue saturation value)
-    - [ ] Cie Lab
-    - [ ] Cie Luv
-    - [ ]
+  - [x] Color spaces
+    - [x] Gray
+    - [x] HLS (hue lightness saturation)
+    - [x] HSV (hue saturation value)
+    - [x] Cie Lab
+    - [x] YUV (Y Cr Cb)
 - [ ] Morphology
 - [ ] Morf Color
 - [ ] Histograms
@@ -37,8 +36,9 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
 
 ## To Do
 
-Load file
-Save file
+Load file.
+Save file.
+Dock windows: Requires using the imgui branch with the docking features.
 
 ## Troubleshooting
 
