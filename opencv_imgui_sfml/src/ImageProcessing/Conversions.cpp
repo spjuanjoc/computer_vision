@@ -143,4 +143,39 @@ toColorSpaceName(const cv::ColorConversionCodes code)
   return name;
 }
 
+cv::MorphShapes
+toShape(const std::size_t element)
+{
+  switch (element)
+  {
+    case 0: return cv::MorphShapes::MORPH_RECT;
+    case 1: return cv::MorphShapes::MORPH_CROSS;
+    case 2: return cv::MorphShapes::MORPH_ELLIPSE;
+    case 3:
+    default:
+      return cv::MorphShapes::MORPH_RECT;
+  }
+}
+
+cv::Mat
+to1ChannelImage(const cv::Mat& source, const std::size_t & type)
+{
+  cv::Mat result;
+  cv::Mat temp;
+
+  switch (type)
+  {
+    default:
+    case 0:
+      cv::cvtColor(source, result, cv::COLOR_RGB2GRAY);
+      break;
+    case 1:
+      cv::cvtColor(source, temp, cv::COLOR_RGB2GRAY);
+      cv::threshold(temp, result, 128, 255, cv::THRESH_BINARY);
+      break;
+  }
+
+  return result;
+}
+
 }  // namespace Processing

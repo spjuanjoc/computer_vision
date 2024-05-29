@@ -27,7 +27,7 @@ MenuBuilder::drawSubmenu(std::string_view name)
   const auto& options = m_submenus[name.data()];
 
   ImGui::BeginGroup();
-  for (const auto& option: options)
+  for (const auto& option : options)
   {
     if (ImGui::Button(option.data(), m_buttons_size))
     {
@@ -46,6 +46,43 @@ MenuBuilder::drawSubmenu(std::string_view name)
   }
 }
 
+void
+MenuBuilder::drawCombobox(std::string_view name, size_t& option_index)
+{
+  const auto& options             = m_combos[name.data()];
+  const auto& combo_preview_value = options[option_index];
+
+  if (ImGui::BeginCombo(name.data(), combo_preview_value.data(), ImGuiComboFlags_WidthFitPreview))
+  {
+    for (size_t n = 0; n < options.size(); ++n)
+    {
+      const bool is_selected = (option_index == n);
+
+      if (ImGui::Selectable(options[n].data(), is_selected))
+        option_index = n;
+
+      if (is_selected)
+        ImGui::SetItemDefaultFocus();
+    }
+    ImGui::EndCombo();
+  }
+}
+
+void
+MenuBuilder::setButtonsSize(const ImVec2& size)
+{
+  m_buttons_size = size;
+}
+
+MenuBuilder&
+MenuBuilder::addMenuOptions(const MenuBuilder::SubmenuPair& menu)
+{
+  const auto& [name, options] = menu;
+  m_submenus[name]            = options;
+
+  return *this;
+}
+
 MenuBuilder&
 MenuBuilder::addPopupOption(const CallbackPair& option)
 {
@@ -55,18 +92,12 @@ MenuBuilder::addPopupOption(const CallbackPair& option)
 }
 
 MenuBuilder&
-MenuBuilder::addMenuOptions(const MenuBuilder::SubmenuPair& menu)
+MenuBuilder::addComboboxOptions(const MenuBuilder::SubmenuPair& combo)
 {
-  auto& [name, options] = menu;
-  m_submenus[name] = options;
+  const auto& [name, options] = combo;
+  m_combos[name]              = options;
 
   return *this;
 }
 
-void
-MenuBuilder::setButtonsSize(const ImVec2& size)
-{
-  m_buttons_size = size;
-}
-
-}  // namespace Screen::MenuBuilder
+}  // namespace Screen::Menu

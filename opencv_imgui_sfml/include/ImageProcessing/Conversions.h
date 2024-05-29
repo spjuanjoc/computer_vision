@@ -42,6 +42,12 @@ getThresholdType();
 std::string
 toColorSpaceName(const cv::ColorConversionCodes code);
 
+cv::MorphShapes
+toShape(const std::size_t element);
+
+cv::Mat
+to1ChannelImage(const cv::Mat& source, const std::size_t & type);
+
 }  // namespace Processing
 
 #endif  //IMAGEPROCESSING_CONVERSIONS_H

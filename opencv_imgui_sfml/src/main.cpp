@@ -13,6 +13,7 @@
 #include "Core/Logging/Logger.h"
 #include "ImageProcessing/Conversions.h"
 #include "ImageProcessing/Drawing.h"
+#include "ImageProcessing/Morphology/MorphologicalOperations.hpp"
 #include "ImageProcessing/Preprocessing/ColorSpaces.hpp"
 #include "ImageProcessing/Preprocessing/Enhancements.hpp"
 #include "ImageProcessing/Preprocessing/GrayWorld.hpp"
@@ -22,6 +23,7 @@
 #include "Screen/MenuBuilder.h"
 
 #include <future>
+#include <span>
 
 #include "bindings/imgui-SFML.h"
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -37,6 +39,7 @@ using namespace Processing::Preprocessing;
 using namespace Processing::Enhancements;
 using namespace Processing::Spaces;
 using namespace Processing::Video;
+using namespace Processing::Morphology;
 
 void
 runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
@@ -47,7 +50,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   StartWindow         start_window;
   sf::Texture         texture_src;
   sf::Texture         texture_dst;
-  std::string         filename        = "share/images/starry_night.jpg";
+  std::string         filename        = "share/images/hoja.jpg";
   std::string         video           = "share/videos/perfect-sp.avi";
   cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
   sf::Image           image_src       = cvMat2sfImage(mat_src);
@@ -55,22 +58,34 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   int                 kernel_size     = 1;
 
   Screen::Menu::MenuBuilder  menu;
-  std::array<std::string, 4> options_main       = { "Raw image", "Load image", "Video", "Preprocessing" };
-  std::array<std::string, 1> options_video      = { "Load video" };
-  std::array<std::string, 3> options_preprocess = { "Grayworld", "Enhancements", "Color spaces" };
-  std::array<std::string, 5> options_enhance    = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
-  std::array<std::string, 5> options_spaces     = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
+  std::array<std::string, 5> options_main              = { "Raw image", "Load image", "Video", "Preprocessing", "Morphology" };
+  std::array<std::string, 1> options_video             = { "Load video" };
+  std::array<std::string, 3> options_preprocess        = { "Grayworld", "Enhancements", "Color spaces" };
+  std::array<std::string, 5> options_enhance           = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
+  std::array<std::string, 5> options_spaces            = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
+  std::array<std::string, 4> options_morpho            = { "Dilation", "Erosion", "Opening", "Closing" };
+  std::array<std::string, 4> structuring_elements      = { "Rectangular", "Cross shaped", "Elliptical", "Custom" };
+  std::array<std::string, 2> image_types               = { "Grayscale", "Binary" };
+  std::size_t                structuring_element_index = 0;
+  std::size_t                image_type_index          = 0;
 
   // Callbacks definitions
   // Main
   auto on_raw        = [&]() { createCvMat(true); };
   auto on_load       = [&]() { should_draw_src = true; };
-  auto on_video       = [&]() { menu.drawSubmenu("Video menu"); };
+  auto on_video      = [&]() { menu.drawSubmenu("Video menu"); };
   auto on_preprocess = [&]() { menu.drawSubmenu("Preprocessing menu"); };
+  auto on_morphology = [&]()
+  {
+    menu.drawCombobox("Structuring Element", structuring_element_index);
+    menu.drawCombobox("Image type", image_type_index);
+    menu.drawSubmenu("Morphology menu");
+  };
 
   // Video
-  auto on_load_video = [&](){
-    auto video_thread = std::async([&](){loadFromFile(video, true);});
+  auto on_load_video = [&]()
+  {
+    auto video_thread = std::async([&]() { loadFromFile(video, true); });
   };
 
   // Preprocessing
@@ -93,13 +108,18 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
 //  auto on_cieluv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Luv); };
   auto on_ycrcb    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2YCrCb); };
 
+  // Morphology
+  auto on_dilation = [&]() { dilation(mat_src, true, structuring_element_index, image_type_index); };
+  auto on_erosion = [&]() { erosion(mat_src, true, structuring_element_index, image_type_index); };
+
   auto do_nothing = [&]() { ImGui::Text("nothing here, come back later"); };
 
   menu.addMenuOptions({ "Main menu", options_main })
     .addPopupOption({ "Raw image", on_raw })
     .addPopupOption({ "Load image", on_load })
     .addPopupOption({ "Video", on_video })
-    .addPopupOption({ "Preprocessing", on_preprocess });
+    .addPopupOption({ "Preprocessing", on_preprocess })
+    .addPopupOption({ "Morphology", on_morphology });
 
   menu.addMenuOptions({"Video menu", options_video})
     .addPopupOption({"Load video", on_load_video});
@@ -123,6 +143,14 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     .addPopupOption({ "CIE lab", on_cielab })
 //    .addPopupOption({ "CIE lub", on_cieluv })
     .addPopupOption({ "YUV (YCrCb)", on_ycrcb });
+
+  menu.addMenuOptions({ "Morphology menu", options_morpho })
+    .addComboboxOptions({"Structuring Element", structuring_elements})
+    .addComboboxOptions({"Image type", image_types })
+    .addPopupOption({"Dilation", on_dilation})
+    .addPopupOption({"Erosion", on_erosion})
+    .addPopupOption({"Opening", do_nothing})
+    .addPopupOption({"Closing", do_nothing});
 
 
   texture_src.loadFromImage(image_src);
