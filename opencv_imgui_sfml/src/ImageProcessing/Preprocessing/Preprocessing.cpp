@@ -14,6 +14,7 @@
 #include "bindings/imgui-SFML.h"
 #include <ImageProcessing/Constants.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 

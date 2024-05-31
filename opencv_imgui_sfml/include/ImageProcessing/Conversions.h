@@ -9,10 +9,8 @@
 #define IMAGEPROCESSING_CONVERSIONS_H
 
 #include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/Texture.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utils/logger.hpp>
-#include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace Processing
@@ -46,7 +44,10 @@ cv::MorphShapes
 toShape(const std::size_t element);
 
 cv::Mat
-to1ChannelImage(const cv::Mat& source, const std::size_t & type);
+to1ChannelImage(const cv::Mat& source, const std::size_t& type);
+
+std::string
+toOperationName(const cv::MorphTypes operation);
 
 }  // namespace Processing
 

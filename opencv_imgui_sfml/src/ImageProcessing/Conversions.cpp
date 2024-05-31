@@ -14,12 +14,16 @@ namespace Processing
 {
 
 static const std::map<cv::ColorConversionCodes, std::string_view> COLOR_SPACES {
-  { cv::COLOR_RGB2GRAY, "Gray Space" },
-  { cv::COLOR_RGB2HLS, "HLS Space" },
-  { cv::COLOR_RGB2HSV, "HSV Space" },
-  { cv::COLOR_RGB2Lab, "CIE Lab Space" },
-  { cv::COLOR_RGB2Luv, "CIE Luv Space" },
-  { cv::COLOR_RGB2YCrCb, "Y Cr Cb Space" },
+  { cv::COLOR_RGB2GRAY, "Gray Space" },   { cv::COLOR_RGB2HLS, "HLS Space" },
+  { cv::COLOR_RGB2HSV, "HSV Space" },     { cv::COLOR_RGB2Lab, "CIE Lab Space" },
+  { cv::COLOR_RGB2Luv, "CIE Luv Space" }, { cv::COLOR_RGB2YCrCb, "Y Cr Cb Space" },
+};
+
+static const std::map<cv::MorphTypes, std::string_view> MORPHO_OPERATIONS {
+  { cv::MorphTypes::MORPH_DILATE, "Dilation" },   { cv::MorphTypes::MORPH_ERODE, "Erosion" },
+  { cv::MorphTypes::MORPH_OPEN, "Opening" },      { cv::MorphTypes::MORPH_CLOSE, "Closing" },
+  { cv::MorphTypes::MORPH_GRADIENT, "Gradient" }, { cv::MorphTypes::MORPH_BLACKHAT, "Black hat" },
+  { cv::MorphTypes::MORPH_TOPHAT, "Top hat" },    { cv::MorphTypes::MORPH_HITMISS, "Hit ot miss" },
 };
 
 sf::Image
@@ -29,8 +33,8 @@ cvMat2sfImage(const cv::Mat& cv_mat)
   cv::Mat   cv_image_alpha;
 
   cv::cvtColor(cv_mat, cv_image_alpha, cv::COLOR_BGR2RGBA);
-  auto width  = static_cast<uint32_t>(cv_image_alpha.cols);
-  auto height = static_cast<uint32_t>(cv_image_alpha.rows);
+  const auto& width  = static_cast<uint32_t>(cv_image_alpha.cols);
+  const auto& height = static_cast<uint32_t>(cv_image_alpha.rows);
   sf_image.create(width, height, cv_image_alpha.ptr());
 
   return sf_image;
@@ -39,12 +43,12 @@ cvMat2sfImage(const cv::Mat& cv_mat)
 cv::Mat
 sfImage2cvMat(const sf::Image& sf_image)
 {
-  sf::Image  image { sf_image };
-  const auto width  = static_cast<int32_t>(image.getSize().x);
-  const auto height = static_cast<int32_t>(image.getSize().y);
-  cv::Size   size(width, height);
-  void*      image_pixels = const_cast<void*>(reinterpret_cast<const void*>(image.getPixelsPtr()));
-  cv::Mat    cv_mat(size, CV_8UC4, image_pixels, cv::Mat::AUTO_STEP);
+  sf::Image      image { sf_image };
+  const auto     width  = static_cast<int32_t>(image.getSize().x);
+  const auto     height = static_cast<int32_t>(image.getSize().y);
+  const cv::Size size(width, height);
+  void*          image_pixels = const_cast<void*>(reinterpret_cast<const void*>(image.getPixelsPtr()));
+  cv::Mat        cv_mat(size, CV_8UC4, image_pixels, cv::Mat::AUTO_STEP);
 
   cv::cvtColor(cv_mat, cv_mat, cv::COLOR_RGBA2BGRA);
 
@@ -107,7 +111,8 @@ applyThresholdFilter(const cv::Mat& image, const int value, const std::size_t ty
 std::size_t
 getThresholdType()
 {
-  static const std::array<std::string_view, 5> types = { "Binary", "Binary Inverted", "Truncate", "To Zero", "To Zero Inverted" };
+  static const std::array<std::string_view, 5> types
+    = { "Binary", "Binary Inverted", "Truncate", "To Zero", "To Zero Inverted" };
   static std::size_t current_index       = 3;
   auto               combo_preview_value = types[current_index];
 
@@ -148,9 +153,12 @@ toShape(const std::size_t element)
 {
   switch (element)
   {
-    case 0: return cv::MorphShapes::MORPH_RECT;
-    case 1: return cv::MorphShapes::MORPH_CROSS;
-    case 2: return cv::MorphShapes::MORPH_ELLIPSE;
+    case 0:
+      return cv::MorphShapes::MORPH_RECT;
+    case 1:
+      return cv::MorphShapes::MORPH_CROSS;
+    case 2:
+      return cv::MorphShapes::MORPH_ELLIPSE;
     case 3:
     default:
       return cv::MorphShapes::MORPH_RECT;
@@ -158,7 +166,7 @@ toShape(const std::size_t element)
 }
 
 cv::Mat
-to1ChannelImage(const cv::Mat& source, const std::size_t & type)
+to1ChannelImage(const cv::Mat& source, const std::size_t& type)
 {
   cv::Mat result;
   cv::Mat temp;
@@ -173,6 +181,19 @@ to1ChannelImage(const cv::Mat& source, const std::size_t & type)
       cv::cvtColor(source, temp, cv::COLOR_RGB2GRAY);
       cv::threshold(temp, result, 128, 255, cv::THRESH_BINARY);
       break;
+  }
+
+  return result;
+}
+
+std::string
+toOperationName(const cv::MorphTypes operation)
+{
+  std::string result;
+
+  if (const auto& name = MORPHO_OPERATIONS.find(operation); name != MORPHO_OPERATIONS.end())
+  {
+    result = name->second;
   }
 
   return result;

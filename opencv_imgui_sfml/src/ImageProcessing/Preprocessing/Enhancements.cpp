@@ -7,13 +7,14 @@
 
 #include "ImageProcessing/Preprocessing/Enhancements.hpp"
 
+#include "ImageProcessing/Constants.hpp"
 #include "ImageProcessing/Conversions.h"
 
 #include <imgui.h>
 
 #include "bindings/imgui-SFML.h"
-#include <ImageProcessing/Constants.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <opencv2/core/mat.hpp>
 
 namespace Processing::Enhancements
@@ -25,7 +26,7 @@ convolution(const cv::Mat& mat, bool is_open)
   static cv::Mat       filter;
   static cv::Mat       result;
   static const cv::Mat kernel { 1, 1, 1, 0, 0, 0, -1, -1, -1 };
-  int                  depth = -1;
+  constexpr int        depth = -1;
 
   cv::filter2D(mat, filter, depth, kernel);
   cv::add(mat, filter, result);
@@ -60,8 +61,8 @@ convolution(const cv::Mat& mat, bool is_open)
 void
 laplace(const cv::Mat& mat, bool is_open)
 {
-  int                  depth       = 0;
-  int                  kernel_size = 3;
+  constexpr int        depth       = 0;
+  constexpr int        kernel_size = 3;
   static cv::Mat       filter;
   static cv::Mat       result;
   static const cv::Mat kernel { 1, 1, 1, 0, 0, 0, -1, -1, -1 };
@@ -103,9 +104,9 @@ laplace(const cv::Mat& mat, bool is_open)
 void
 medianBlur(const cv::Mat& mat, int& kernel_size, bool is_open)
 {
-  constexpr const auto step_size = 2;
-  static sf::Image     image     = cvMat2sfImage(mat);
-  static sf::Texture   texture;
+  constexpr auto     step_size = 2;
+  static sf::Image   image     = cvMat2sfImage(mat);
+  static sf::Texture texture;
 
   texture.loadFromImage(image);
 
@@ -164,13 +165,13 @@ sobel(const cv::Mat& mat, bool is_open)
 void
 thresholding(const cv::Mat& mat, bool is_open)
 {
-  static int         value     = 128;
-  static const int   min_value = 0;
-  static const int   max_value = 255;
-  static std::size_t type      = 3;
-  static cv::Mat     filter    = applyThresholdFilter(mat, value, type);
-  static sf::Image   image     = cvMat2sfImage(filter);
-  static sf::Texture texture;
+  static int           value     = 128;
+  static constexpr int min_value = 0;
+  static constexpr int max_value = 255;
+  static std::size_t   type      = 3;
+  static cv::Mat       filter    = applyThresholdFilter(mat, value, type);
+  static sf::Image     image     = cvMat2sfImage(filter);
+  static sf::Texture   texture;
 
   texture.loadFromImage(image);
 

@@ -7,12 +7,13 @@
 
 #include "ImageProcessing/Preprocessing/ColorSpaces.hpp"
 
-#include <ImageProcessing/Conversions.h>
+#include "ImageProcessing/Constants.hpp"
+#include "ImageProcessing/Conversions.h"
 
 #include <imgui.h>
 
 #include "bindings/imgui-SFML.h"
-#include <ImageProcessing/Constants.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -20,7 +21,7 @@ namespace Processing::Spaces
 {
 
 void
-toColorSpace(const cv::Mat& mat, bool is_open, cv::ColorConversionCodes conversion_code)
+toColorSpace(const cv::Mat& mat, bool is_open, const cv::ColorConversionCodes conversion_code)
 {
   static cv::Mat     result;
   static sf::Image   image;
