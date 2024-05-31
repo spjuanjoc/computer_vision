@@ -26,6 +26,7 @@
 #include <span>
 
 #include "bindings/imgui-SFML.h"
+#include <ImageProcessing/Histogram/Histogram.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/utils/logger.hpp>
@@ -50,7 +51,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   StartWindow         start_window;
   sf::Texture         texture_src;
   sf::Texture         texture_dst;
-  std::string         filename        = "share/images/hoja.jpg";
+  std::string         filename        = "share/images/beach.png";
   std::string         video           = "share/videos/perfect-sp.avi";
   cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
   sf::Image           image_src       = cvMat2sfImage(mat_src);
@@ -58,12 +59,13 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   int                 kernel_size     = 1;
 
   Screen::Menu::MenuBuilder  menu;
-  std::array<std::string, 5> options_main              = { "Raw image", "Load image", "Video", "Preprocessing", "Morphology" };
+  std::array<std::string, 6> options_main              = { "Raw image", "Load image", "Video", "Preprocessing", "Morphology", "Histogram" };
   std::array<std::string, 1> options_video             = { "Load video" };
   std::array<std::string, 3> options_preprocess        = { "Grayworld", "Enhancements", "Color spaces" };
   std::array<std::string, 5> options_enhance           = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
   std::array<std::string, 5> options_spaces            = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
-  std::array<std::string, 4> options_morpho            = { "Dilation", "Erosion", "Opening", "Closing" };
+  std::array<std::string, 5> options_morpho            = { "Dilation", "Erosion", "Opening", "Closing", "Gradient" };
+  std::array<std::string, 2> options_histogram         = { "Grayscale", "Color" };
   std::array<std::string, 4> structuring_elements      = { "Rectangular", "Cross shaped", "Elliptical", "Custom" };
   std::array<std::string, 2> image_types               = { "Grayscale", "Binary" };
   std::size_t                structuring_element_index = 0;
@@ -81,6 +83,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     menu.drawCombobox("Image type", image_type_index);
     menu.drawSubmenu("Morphology menu");
   };
+  auto on_histogram = [&]() { menu.drawSubmenu("Histogram menu"); };
 
   // Video
   auto on_load_video = [&]()
@@ -111,7 +114,13 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   // Morphology
   auto on_dilation = [&]() { dilation(mat_src, true, structuring_element_index, image_type_index); };
   auto on_erosion = [&]() { erosion(mat_src, true, structuring_element_index, image_type_index); };
+  auto on_open = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_OPEN); };
+  auto on_close = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_CLOSE); };
+  auto on_gradient = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_GRADIENT); };
 
+  // Histogram
+  auto on_gray_histogram = [&]() { grayHistogram(mat_src, true); };
+  auto on_color_histogram = [&]() { colorHistogram(mat_src, true); };
   auto do_nothing = [&]() { ImGui::Text("nothing here, come back later"); };
 
   menu.addMenuOptions({ "Main menu", options_main })
@@ -119,7 +128,8 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     .addPopupOption({ "Load image", on_load })
     .addPopupOption({ "Video", on_video })
     .addPopupOption({ "Preprocessing", on_preprocess })
-    .addPopupOption({ "Morphology", on_morphology });
+    .addPopupOption({ "Morphology", on_morphology })
+    .addPopupOption({ "Histogram", on_histogram });
 
   menu.addMenuOptions({"Video menu", options_video})
     .addPopupOption({"Load video", on_load_video});
@@ -149,9 +159,13 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     .addComboboxOptions({"Image type", image_types })
     .addPopupOption({"Dilation", on_dilation})
     .addPopupOption({"Erosion", on_erosion})
-    .addPopupOption({"Opening", do_nothing})
-    .addPopupOption({"Closing", do_nothing});
+    .addPopupOption({"Opening", on_open})
+    .addPopupOption({"Closing", on_close})
+    .addPopupOption({"Gradient", on_gradient});
 
+  menu.addMenuOptions({ "Histogram menu", options_histogram })
+    .addPopupOption({ "Grayscale", on_gray_histogram })
+    .addPopupOption({ "Color", on_color_histogram });
 
   texture_src.loadFromImage(image_src);
   texture_dst.loadFromImage(image_src);
@@ -184,13 +198,13 @@ main(int argc, const char* argv[])
 {
   cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_SILENT);
 
-  auto args = Core::parseArguments(argc, argv);
+  const auto args = Core::parseArguments(argc, argv);
   //  Logger::SpdLogger::get().enableFileSink();
   Logger::SpdLogger::get().setLevel(args.level);
   Logger::Info(">>main");
 
   auto mode = args.is_fullscreen ? sf::VideoMode().getFullscreenModes().at(0) : sf::VideoMode(args.width, args.height);
-  auto main_window = std::make_shared<sf::RenderWindow>(mode, WINDOW_TITLE);
+  const auto main_window = std::make_shared<sf::RenderWindow>(mode, WINDOW_TITLE);
 
   main_window->setFramerateLimit(args.frame_rate);
   [[maybe_unused]] bool const isInit = ImGui::SFML::Init(*main_window);
