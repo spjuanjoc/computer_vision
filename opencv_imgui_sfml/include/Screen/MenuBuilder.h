@@ -5,47 +5,79 @@
  * @date    2024-05-15
  */
 
-#ifndef OPENCV_IMGUI_SFML_INCLUDE_SCREEN_MENU_H
-#define OPENCV_IMGUI_SFML_INCLUDE_SCREEN_MENU_H
+#ifndef SCREEN_MENUBUILDER_H
+#define SCREEN_MENUBUILDER_H
 
 #include <Core/Logging/Logger.h>
 
-#include <array>
 #include <imgui.h>
 #include <span>
+
+namespace cv
+{
+class Mat;
+}
 
 namespace Screen::Menu
 {
 
+class MenuBuilder;
+
+void
+buildMenu(const cv::Mat& mat_src, MenuBuilder& menu, bool& should_draw_src);
+
+/**
+*
+*/
+struct Option
+{
+  void select() const { ++is_selected; }
+
+  std::string           name;
+  std::function<void()> callback {};
+  bool                  is_submenu { false };
+  mutable std::uint32_t is_selected { 0 };
+};
+
+/**
+*
+*/
 class MenuBuilder
 {
 public:
-  using CallbackPair = std::pair<std::string_view, std::function<void()>>;
-  using SubmenuPair  = std::pair<std::string, std::span<std::string>>;
-  using OptionsMap   = std::unordered_map<std::string, std::span<std::string>>;
+  using OptionPair = std::pair<std::string, std::span<Option>>;
+  using OptionsMap = std::unordered_map<std::string, std::span<Option>>;
 
   void draw(std::string_view name);
 
-  void drawSubmenu(std::string_view name);
+  void drawOptions(std::string_view name);
 
-  void drawCombobox(std::string_view name, size_t& option_index);
+  void addCombobox(const MenuBuilder::OptionPair& combo, size_t& option_index);
 
   void setButtonsSize(const ImVec2& size);
 
-  MenuBuilder& addMenuOptions(const MenuBuilder::SubmenuPair& menu);
+  MenuBuilder& addOptions(const MenuBuilder::OptionPair& menu);
 
-  MenuBuilder& addPopupOption(const CallbackPair& option);
-
-  MenuBuilder& addComboboxOptions(const MenuBuilder::SubmenuPair& combo);
+  MenuBuilder& addSubmenu(const MenuBuilder::OptionPair& menu);
 
 private:
-  ImVec2                      m_buttons_size { 150, 25 };
-  std::span<std::string_view> m_options;
-  std::vector<CallbackPair>   m_popup_options;
-  OptionsMap                  m_submenus;
-  OptionsMap                  m_combos;
+
+  static void drawSubmenu(const Option& option);
+
+  void runCallbacks(std::string_view name);
+
+  void drawItem(const Option& option) const;
+
+  void drawCombobox(std::string_view name, size_t& option_index);
+
+  MenuBuilder& addComboboxOptions(const MenuBuilder::OptionPair& combo);
+
+private:
+  ImVec2      m_buttons_size { 150, 25 };
+  OptionsMap m_options;
+  OptionsMap m_combos;
 };
 
 }  // namespace Screen::MenuBuilder
 
-#endif  //OPENCV_IMGUI_SFML_INCLUDE_SCREEN_MENU_H
+#endif  //SCREEN_MENUBUILDER_H

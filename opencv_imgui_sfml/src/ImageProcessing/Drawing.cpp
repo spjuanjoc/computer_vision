@@ -40,6 +40,7 @@ createCvMat(bool is_open)
 void
 drawSrcImage(const sf::Texture& texture_src, bool& is_open)
 {
+  // ImGui::SetNextWindowSizeConstraints(ImVec2(100, 100), ImVec2(512, 512));
   if (is_open)
   {
     ImGui::Begin("Original", &is_open, WINDOWS_FLAGS);
