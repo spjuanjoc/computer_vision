@@ -26,9 +26,16 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
     - [x] HSV (hue saturation value)
     - [x] Cie Lab
     - [x] YUV (Y Cr Cb)
-- [ ] Morphology
-- [ ] Morf Color
-- [ ] Histograms
+- [x] Morphology in Black and White / Grayscale
+  - [x] Dilation
+  - [x] Erosion
+  - [x] Opening
+  - [x] Closing
+  - [x] Gradient
+- [ ] Morphology in Color
+- [x] Histograms
+  - [x] Grayscale
+  - [x] Color
 - [ ] Histograms comparison
 - [ ] Matching Template
 - [ ] Video Recording
@@ -36,9 +43,12 @@ See the [imgui interactive manual](https://pthom.github.io/imgui_manual_online/m
 
 ## To Do
 
-Load file.
-Save file.
-Dock windows: Requires using the imgui branch with the docking features.
+- [ ] Fixed size windows
+- [ ] Fixed position windows
+- [ ] Update menu to 'Context menu inside a regular window'
+- [ ] Load file.
+- [ ] Save file.
+- [ ] ~~Dock windows: Requires using the imgui branch with the docking features.~~
 
 ## Troubleshooting
 
