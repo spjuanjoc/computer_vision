@@ -43,13 +43,14 @@ grayHistogramLines(const cv::Mat& source)
 
   for (std::size_t i = 1; i < size; i++)
   {
+    const int ii = static_cast<int>(std::round(i));
     const size_t x_1 = bin_width * (i - 1);
-    const size_t y_1 = height - static_cast<size_t>(std::round(histogram_values.at<float>(i - 1)));
+    const size_t y_1 = height - static_cast<size_t>(std::round(histogram_values.at<float>(ii - 1)));
     const size_t x_2 = bin_width * (i);
-    const size_t y_2 = height - static_cast<size_t>(std::round(histogram_values.at<float>(i)));
+    const size_t y_2 = height - static_cast<size_t>(std::round(histogram_values.at<float>(ii)));
 
-    const cv::Point point_1(x_1, y_1);
-    const cv::Point point_2(x_2, y_2);
+    const cv::Point point_1(static_cast<int>(x_1), static_cast<int>(y_1));
+    const cv::Point point_2(static_cast<int>(x_2), static_cast<int>(y_2));
 
     cv::line(result, point_1, point_2, color_gray, 2);
   }
