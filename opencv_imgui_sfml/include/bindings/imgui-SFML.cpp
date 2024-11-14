@@ -385,7 +385,7 @@ void Update(const sf::Vector2i& mousePos, const sf::Vector2f& displaySize, sf::T
     for (unsigned int i = 0; i < 3; i++)
     {
       io.MouseDown[i] = s_currWindowCtx->touchDown[i] || sf::Touch::isDown(i) || s_currWindowCtx->mousePressed[i]
-                        || sf::Mouse::isButtonPressed((sf::Mouse::Button) i);
+                        || sf::Mouse::isButtonPressed( static_cast<sf::Mouse::Button>(i));
       s_currWindowCtx->mousePressed[i] = false;
       s_currWindowCtx->touchDown[i]    = false;
     }
@@ -857,7 +857,7 @@ void SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height)
   // Our visible imgui space lies from draw_data->DisplayPos (top left) to
   // draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single
   // viewport apps.
-  glViewport(0, 0, (GLsizei) fb_width, (GLsizei) fb_height);
+  glViewport(0, 0, fb_width, fb_height);
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();
@@ -891,12 +891,12 @@ void RenderDrawLists(ImDrawData* draw_data)
   }
 
   const ImGuiIO& io = ImGui::GetIO();
-  assert(io.Fonts->TexID != (ImTextureID) nullptr);  // You forgot to create and set font texture
+  assert(io.Fonts->TexID != static_cast<ImTextureID>(nullptr));  // You forgot to create and set font texture
 
   // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates !=
   // framebuffer coordinates)
-  const int fb_width  = (int) (draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
-  const int fb_height = (int) (draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+  const int fb_width  = static_cast<int>(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+  const int fb_height = static_cast<int>(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
   if (fb_width == 0 || fb_height == 0)
     return;
   draw_data->ScaleClipRects(io.DisplayFramebufferScale);
@@ -942,15 +942,15 @@ void RenderDrawLists(ImDrawData* draw_data)
     glVertexPointer(2,
                     GL_FLOAT,
                     sizeof(ImDrawVert),
-                    (const GLvoid*) ((const char*) vtx_buffer + IM_OFFSETOF(ImDrawVert, pos)));
+                    static_cast<const GLvoid*> (reinterpret_cast<const char*>(vtx_buffer) + IM_OFFSETOF(ImDrawVert, pos)));
     glTexCoordPointer(2,
                       GL_FLOAT,
                       sizeof(ImDrawVert),
-                      (const GLvoid*) ((const char*) vtx_buffer + IM_OFFSETOF(ImDrawVert, uv)));
+                      static_cast<const GLvoid*> (reinterpret_cast<const char*>(vtx_buffer) + IM_OFFSETOF(ImDrawVert, uv)));
     glColorPointer(4,
                    GL_UNSIGNED_BYTE,
                    sizeof(ImDrawVert),
-                   (const GLvoid*) ((const char*) vtx_buffer + IM_OFFSETOF(ImDrawVert, col)));
+                   static_cast<const GLvoid*> (reinterpret_cast<const char*>(vtx_buffer) + IM_OFFSETOF(ImDrawVert, col)));
 
     for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
     {
@@ -978,16 +978,16 @@ void RenderDrawLists(ImDrawData* draw_data)
             && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
         {
           // Apply scissor/clipping rectangle
-          glScissor((int) clip_rect.x,
-                    (int) (static_cast<float>(fb_height) - clip_rect.w),
-                    (int) (clip_rect.z - clip_rect.x),
-                    (int) (clip_rect.w - clip_rect.y));
+          glScissor(static_cast<int>(clip_rect.x),
+                    static_cast<int>(static_cast<float>(fb_height) - clip_rect.w),
+                    static_cast<int>(clip_rect.z - clip_rect.x),
+                    static_cast<int>(clip_rect.w - clip_rect.y));
 
           // Bind texture, Draw
           const GLuint textureHandle = convertImTextureIDToGLTextureHandle(pcmd->TextureId);
           glBindTexture(GL_TEXTURE_2D, textureHandle);
           glDrawElements(GL_TRIANGLES,
-                         (GLsizei) pcmd->ElemCount,
+                         static_cast<GLsizei>(pcmd->ElemCount),
                          sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
                          idx_buffer + pcmd->IdxOffset);
         }
@@ -999,17 +999,17 @@ void RenderDrawLists(ImDrawData* draw_data)
   glDisableClientState(GL_COLOR_ARRAY);
   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   glDisableClientState(GL_VERTEX_ARRAY);
-  glBindTexture(GL_TEXTURE_2D, (GLuint) last_texture);
+  glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(last_texture));
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glPopAttrib();
-  glPolygonMode(GL_FRONT, (GLenum) last_polygon_mode[0]);
-  glPolygonMode(GL_BACK, (GLenum) last_polygon_mode[1]);
-  glViewport(last_viewport[0], last_viewport[1], (GLsizei) last_viewport[2], (GLsizei) last_viewport[3]);
-  glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei) last_scissor_box[2], (GLsizei) last_scissor_box[3]);
-  glShadeModel((GLenum) last_shade_model);
+  glPolygonMode(GL_FRONT, static_cast<GLenum>(last_polygon_mode[0]));
+  glPolygonMode(GL_BACK, static_cast<GLenum>(last_polygon_mode[1]));
+  glViewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
+  glScissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
+  glShadeModel(static_cast<GLenum>(last_shade_model));
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, last_tex_env_mode);
 
 #ifdef GL_VERSION_ES_CL_1_1
@@ -1021,7 +1021,7 @@ void RenderDrawLists(ImDrawData* draw_data)
 
 unsigned int getConnectedJoystickId()
 {
-  for (unsigned int i = 0; i < (unsigned int) sf::Joystick::Count; ++i)
+  for (unsigned int i = 0; i < static_cast<unsigned int>(sf::Joystick::Count); ++i)
   {
     if (sf::Joystick::isConnected(i))
       return i;
