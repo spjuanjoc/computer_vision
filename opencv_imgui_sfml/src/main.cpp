@@ -6,6 +6,8 @@
  * @date    2021-10-12
 */
 
+#include <Screen/MenuBuilder2.h>
+
 #include "Core/Constants/Constants.h"
 #include "Core/Events/EventsHandler.h"
 #include "Core/Initialization/Arguments.h"
@@ -42,7 +44,7 @@ using namespace Processing::Video;
 using namespace Processing::Morphology;
 
 void
-runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
+buildMenu2(const cv::Mat& mat_src, MenuBuilder2& menu, bool& should_draw_src)
 {
   const std::string  filename                  = "share/images/beach.png";
   const std::string  video                     = "share/videos/perfect-sp.avi";
