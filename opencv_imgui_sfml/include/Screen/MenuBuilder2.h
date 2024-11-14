@@ -30,10 +30,11 @@ struct Option
 class MenuBuilder2
 {
 public:
+  using OptionPair = std::pair<std::string, std::span<Option>>;
+  using OptionsMap2 = std::unordered_map<std::string, std::span<Option>>;
+
   // using CallbackPair = std::pair<std::string_view, std::function<void()>>;
-  using OptionPair  = std::pair<std::string, std::span<Option>>;
   // using OptionsMap   = std::unordered_map<std::string, std::span<std::string>>;
-  using OptionsMap2   = std::unordered_map<std::string, std::span<Option>>;
   // using ActionsMap   = std::unordered_map<std::string_view, std::function<void()>>;
 
   void draw(std::string_view name);
@@ -49,9 +50,10 @@ public:
   MenuBuilder2& addSubmenu(const MenuBuilder2::OptionPair& menu);
 
 private:
-  void runCallbacks(std::string_view name);
 
   static void drawSubmenu(const Option& option);
+
+  void runCallbacks(std::string_view name);
 
   void drawItem(const Option& option) const;
 
