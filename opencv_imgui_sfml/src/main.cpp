@@ -23,7 +23,6 @@
 #include "Screen/MenuBuilder.h"
 
 #include <future>
-#include <span>
 
 #include "bindings/imgui-SFML.h"
 #include <ImageProcessing/Histogram/Histogram.hpp>
@@ -45,31 +44,77 @@ using namespace Processing::Morphology;
 void
 runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
 {
-  sf::Clock           delta_clock;
-  Core::EventsHandler program { main_window };
-  Background          background;
-  StartWindow         start_window;
-  sf::Texture         texture_src;
-  sf::Texture         texture_dst;
-  std::string         filename        = "share/images/beach.png";
-  std::string         video           = "share/videos/perfect-sp.avi";
-  cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
-  sf::Image           image_src       = cvMat2sfImage(mat_src);
-  bool                should_draw_src = true;
-  int                 kernel_size     = 1;
+  const std::string  filename                  = "share/images/beach.png";
+  const std::string  video                     = "share/videos/perfect-sp.avi";
+  constexpr bool     is_submenu                = true;
 
-  Screen::Menu::MenuBuilder  menu;
-  std::array<std::string, 6> options_main              = { "Raw image", "Load image", "Video", "Preprocessing", "Morphology", "Histogram" };
-  std::array<std::string, 1> options_video             = { "Load video" };
-  std::array<std::string, 3> options_preprocess        = { "Grayworld", "Enhancements", "Color spaces" };
-  std::array<std::string, 5> options_enhance           = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
-  std::array<std::string, 5> options_spaces            = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
-  std::array<std::string, 5> options_morpho            = { "Dilation", "Erosion", "Opening", "Closing", "Gradient" };
-  std::array<std::string, 2> options_histogram         = { "Grayscale", "Color" };
-  std::array<std::string, 4> structuring_elements      = { "Rectangular", "Cross shaped", "Elliptical", "Custom" };
-  std::array<std::string, 2> image_types               = { "Grayscale", "Binary" };
-  std::size_t                structuring_element_index = 0;
-  std::size_t                image_type_index          = 0;
+  int                kernel_size               = 1;
+  static std::size_t structuring_element_index = 0;
+  static std::size_t image_type_index          = 0;
+
+  auto do_nothing         = [&]() { ImGui::Text("nothing here, come back later"); };
+
+  static std::vector<Option> options_video { {"Load video", do_nothing} };
+  static std::vector<Option> structuring_elements {
+    {"Rectangular", do_nothing},
+    {"Cross shaped", do_nothing},
+    {"Elliptical", do_nothing},
+    {"Custom", do_nothing}
+  };
+  static std::vector<Option> image_types { {"Grayscale", do_nothing}, {"Binary", do_nothing} };
+  static std::vector<Option> options_morpho {
+    {"Dilation", do_nothing},
+    {"Erosion", do_nothing},
+    {"Opening", do_nothing},
+    {"Closing", do_nothing},
+    {"Gradient", do_nothing}
+  };
+
+  // Callbacks definitions
+  // Main
+  auto on_raw        = [&]() { createCvMat(true); };
+  auto on_load       = [&]() { should_draw_src = true; };
+  auto on_video      = [&]() { menu.addSubmenu({"Video menu", options_video}); };
+  auto on_preprocess = [&]() { menu.addSubmenu({"Preprocessing menu", options_video}); };
+  auto on_morphology = [&]()
+  {
+    menu.addCombobox({ "Structuring Element", structuring_elements }, structuring_element_index);
+    menu.addCombobox({"Image type", image_types}, image_type_index);
+    menu.addSubmenu({"Morphology menu", options_morpho});
+  };
+  auto on_histogram = [&]() { menu.addSubmenu({"Histogram menu", options_video}); };
+
+  static std::vector<Option> options_main
+  { {"Raw image", on_raw},
+    {"Load image", on_load},
+    {"Video", on_video, is_submenu},
+    {"Preprocessing", on_preprocess, is_submenu},
+    {"Morphology", on_morphology, is_submenu},
+    {"Histogram", on_histogram, is_submenu}
+  };
+
+  menu.addOptions({ "Main menu", options_main });
+
+}
+
+void
+buildMenu(const cv::Mat& mat_src, MenuBuilder& menu, bool& should_draw_src)
+{
+  const std::string filename    = "share/images/beach.png";
+  const std::string video       = "share/videos/perfect-sp.avi";
+  int               kernel_size = 1;
+
+  static std::array<std::string, 6> options_main              = { "Raw image", "Load image", "Video", "Preprocessing", "Morphology", "Histogram" };
+  static std::array<std::string, 1> options_video             = { "Load video" };
+  static std::array<std::string, 3> options_preprocess        = { "Grayworld", "Enhancements", "Color spaces" };
+  static std::array<std::string, 5> options_enhance           = { "Convolution", "Laplace filter", "Median blur", "Sobel filter", "Thresholding" };
+  static std::array<std::string, 5> options_spaces            = { "Gray space", "HLS", "HSV", "CIE lab", /*"CIE luv",*/ "YUV (YCrCb)" };
+  static std::array<std::string, 5> options_morpho            = { "Dilation", "Erosion", "Opening", "Closing", "Gradient" };
+  static std::array<std::string, 2> options_histogram         = { "Grayscale", "Color" };
+  static std::array<std::string, 4> structuring_elements      = { "Rectangular", "Cross shaped", "Elliptical", "Custom" };
+  static std::array<std::string, 2> image_types               = { "Grayscale", "Binary" };
+  static std::size_t                structuring_element_index = 0;
+  static std::size_t                image_type_index          = 0;
 
   // Callbacks definitions
   // Main
@@ -86,10 +131,7 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   auto on_histogram = [&]() { menu.drawSubmenu("Histogram menu"); };
 
   // Video
-  auto on_load_video = [&]()
-  {
-    auto video_thread = std::async([&]() { loadFromFile(video, true); });
-  };
+  auto on_load_video = [&]() { auto video_thread = std::async([&]() { loadFromFile(video, true); }); };
 
   // Preprocessing
   auto on_grayworld   = [&]() { grayWorld(mat_src, true); };
@@ -107,21 +149,24 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   auto on_gray   = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2GRAY); };
   auto on_hls    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2HLS); };
   auto on_hsv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2HSV); };
-  auto on_cielab    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Lab); };
-//  auto on_cieluv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Luv); };
-  auto on_ycrcb    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2YCrCb); };
+  auto on_cielab = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Lab); };
+  //  auto on_cieluv    = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2Luv); };
+  auto on_ycrcb = [&]() { toColorSpace(mat_src, true, cv::COLOR_RGB2YCrCb); };
 
   // Morphology
   auto on_dilation = [&]() { dilation(mat_src, true, structuring_element_index, image_type_index); };
-  auto on_erosion = [&]() { erosion(mat_src, true, structuring_element_index, image_type_index); };
-  auto on_open = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_OPEN); };
-  auto on_close = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_CLOSE); };
-  auto on_gradient = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_GRADIENT); };
+  auto on_erosion  = [&]() { erosion(mat_src, true, structuring_element_index, image_type_index); };
+  auto on_open
+    = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_OPEN); };
+  auto on_close
+    = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_CLOSE); };
+  auto on_gradient
+    = [&]() { morphology(mat_src, true, structuring_element_index, image_type_index, cv::MorphTypes::MORPH_GRADIENT); };
 
   // Histogram
-  auto on_gray_histogram = [&]() { grayHistogram(mat_src, true); };
+  auto on_gray_histogram  = [&]() { grayHistogram(mat_src, true); };
   auto on_color_histogram = [&]() { colorHistogram(mat_src, true); };
-  auto do_nothing = [&]() { ImGui::Text("nothing here, come back later"); };
+  auto do_nothing         = [&]() { ImGui::Text("nothing here, come back later"); };
 
   menu.addMenuOptions({ "Main menu", options_main })
     .addPopupOption({ "Raw image", on_raw })
@@ -166,6 +211,24 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
   menu.addMenuOptions({ "Histogram menu", options_histogram })
     .addPopupOption({ "Grayscale", on_gray_histogram })
     .addPopupOption({ "Color", on_color_histogram });
+}
+
+void
+runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused]] const Core::Arguments& args)
+{
+  sf::Clock           delta_clock;
+  Core::EventsHandler program { main_window };
+  Background          background;
+  StartWindow         start_window;
+  sf::Texture         texture_src;
+  sf::Texture         texture_dst;
+  std::string         filename        = "share/images/beach.png";
+  bool                should_draw_src = true;
+  cv::Mat             mat_src         = cv::imread(filename, cv::IMREAD_UNCHANGED);
+  sf::Image           image_src       = cvMat2sfImage(mat_src);
+
+  MenuBuilder2 menu;
+  buildMenu2(mat_src, menu, should_draw_src);
 
   texture_src.loadFromImage(image_src);
   texture_dst.loadFromImage(image_src);
@@ -181,9 +244,6 @@ runMainLoop(const std::shared_ptr<sf::RenderWindow>& main_window, [[maybe_unused
     background.draw();
 
     menu.draw("Main menu");
-
-    //    showAppMainMenuBar();
-    //    drawMainMenu();
 
     if (should_draw_src)
       drawSrcImage(texture_src, should_draw_src);

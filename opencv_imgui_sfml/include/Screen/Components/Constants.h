@@ -9,6 +9,7 @@
 #define SCREEN_COMPONENTS_CONSTANTS_H
 
 #include <cstdint>
+#include <imgui.h>
 
 namespace Screen::Components
 {
@@ -23,6 +24,9 @@ constexpr float QUARTER_DIVISOR = 4.0F;
 constexpr auto BACKGROUND_FILENAME = "share/textures/background/gray.png";
 constexpr auto START_FILENAME      = "share/textures/background/background_pastel.png";
 constexpr auto START_TEXT          = "TO START PRESS ENTER";
+
+constexpr ImVec2 MENU_WINDOW_SIZE = { 400, 400 };
+constexpr ImVec2 MENU_WINDOW_POS  = { 0, 0 };
 
 }  // namespace Screen::Components
 

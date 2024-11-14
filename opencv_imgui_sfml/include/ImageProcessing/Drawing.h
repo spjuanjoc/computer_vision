@@ -8,13 +8,7 @@
 #ifndef INCLUDE_IMAGEPROCESSING_DRAWING_H
 #define INCLUDE_IMAGEPROCESSING_DRAWING_H
 
-#include "Conversions.h"
-
-#include <imgui.h>
-
 #include "bindings/imgui-SFML.h"
-#include <SFML/Graphics/Texture.hpp>
-#include <opencv2/core/mat.hpp>
 
 namespace Processing
 {

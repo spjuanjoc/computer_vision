@@ -22,7 +22,7 @@ class MenuBuilder
 public:
   using CallbackPair = std::pair<std::string_view, std::function<void()>>;
   using SubmenuPair  = std::pair<std::string, std::span<std::string>>;
-  using OptionsMap = std::unordered_map<std::string, std::span<std::string>>;
+  using OptionsMap   = std::unordered_map<std::string, std::span<std::string>>;
 
   void draw(std::string_view name);
 

@@ -7,22 +7,29 @@
 
 #include "Screen/MenuBuilder.h"
 
-
+#include "Screen/Components/Constants.h"
 namespace Screen::Menu
 {
 
 void
-MenuBuilder::draw(std::string_view name)
+MenuBuilder::draw(const std::string_view name)
 {
+  ImGui::SetNextWindowSize(Components::MENU_WINDOW_SIZE);
+  ImGui::SetNextWindowPos(Components::MENU_WINDOW_POS);
+
+  ImGui::Begin("Menu");
+
   if (ImGui::TreeNodeEx(name.data(), ImGuiTreeNodeFlags_DefaultOpen))
   {
     drawSubmenu(name);
     ImGui::TreePop();
   }
+
+  ImGui::End();
 }
 
 void
-MenuBuilder::drawSubmenu(std::string_view name)
+MenuBuilder::drawSubmenu(const std::string_view name)
 {
   const auto& options = m_submenus[name.data()];
 
@@ -47,7 +54,7 @@ MenuBuilder::drawSubmenu(std::string_view name)
 }
 
 void
-MenuBuilder::drawCombobox(std::string_view name, size_t& option_index)
+MenuBuilder::drawCombobox(const std::string_view name, size_t& option_index)
 {
   const auto& options             = m_combos[name.data()];
   const auto& combo_preview_value = options[option_index];

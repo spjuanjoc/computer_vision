@@ -10,12 +10,10 @@
 
 #include <imgui.h>
 
-#include "bindings/imgui-SFML.h"
-
 namespace Processing
 {
 
-const ImGuiWindowFlags_ WINDOWS_FLAGS = ImGuiWindowFlags_AlwaysAutoResize;
+constexpr ImGuiWindowFlags_ WINDOWS_FLAGS = ImGuiWindowFlags_AlwaysAutoResize;
 
 }
 
